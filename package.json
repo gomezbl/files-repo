@@ -1,0 +1,18 @@
+{
+  "name": "@gomezbl/files-manager",
+  "version": "1.0.0",
+  "description": "Files manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rafael Gómez Blanes",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.2.0"
+  },
+  "dependencies": {
+    "fs-extra": "^8.1.0",
+    "uuid": "^3.3.3"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "files-manager",
+  "name": "files-repo",
   "version": "1.0.0",
   "description": "Files manager module for easy files managemente in a NodeJS project",
   "main": "index.js",

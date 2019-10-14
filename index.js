@@ -20,8 +20,7 @@ class FilesManager {
      */
     constructor(config) {
         if ( config.Size < 1 || config.Size > 8 ) throw Error(`Size of repository of ${config.Size} not valid. Allowed from 1 to 8`);
-
-        
+ 
         this.config = config;
         this.Helper = new FilesManagerHelper();
     }

@@ -25,6 +25,17 @@ describe( '@gomezbl/files tests', () => {
         Assert.equal( fileId.length, 32 );
     });
 
+    it( '# Try to add no existingfile to repository', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
+        
+        try {
+            await f.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "thisfiledoesn'texist.txt" ) );
+            Assert.fail();
+        } catch(err) {
+            // Test works
+        }
+    });
+
     it( '# Add file to repository from existing file and read it', async() => {
         let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         
@@ -32,6 +43,7 @@ describe( '@gomezbl/files tests', () => {
         let fileRead = await f.ReadFile( fileId );
 
         Assert.equal( fileId.length, 32 );
+        Assert.equal( "This is just a sample file", fileRead.toString() );
     });
 
     it( '# Add file from buffer', async() => {
@@ -43,6 +55,26 @@ describe( '@gomezbl/files tests', () => {
         Assert.equal( fileId.length, 32 );
     });
 
+    it( '# Add file from buffer 1 byte length', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+        let fileBuffer = Buffer.alloc(1,10);
+
+        let fileId = await f.AddFromBuffer( fileBuffer );
+        let fileRead = await f.ReadFile( fileId );
+
+        Assert.isTrue( fileBuffer.equals(fileRead) );
+    });
+
+    it( '# Add file from buffer 1025 bytes length', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+        let fileBuffer = Buffer.alloc(1025,10);
+
+        let fileId = await f.AddFromBuffer( fileBuffer );
+        let fileRead = await f.ReadFile( fileId );
+
+        Assert.isTrue( fileBuffer.equals(fileRead) );
+    });
+
     it( '# Read file from buffer', async() => {
         let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.from("This is a test buffer");
@@ -50,7 +82,7 @@ describe( '@gomezbl/files tests', () => {
         let fileId = await f.AddFromBuffer( fileBuffer );
         let fileRead = await f.ReadFile( fileId );
 
-        //Assert.isTrue( fileBuffer.equals(fileRead) );
+        Assert.isTrue( fileBuffer.equals(fileRead) );
     });
 
     it( '# Get file manifest', async() => {
@@ -65,5 +97,12 @@ describe( '@gomezbl/files tests', () => {
         Assert.isDefined( fileManifest.extension );
         Assert.isDefined( fileManifest.created );
         Assert.isDefined( fileManifest.location );
+    })
+    
+    it( '# Bad repository size', () => {
+        try {
+            let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: 9  } );
+            Assert.fail();
+        }catch(err) {}
     });
 });

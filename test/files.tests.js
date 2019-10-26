@@ -105,4 +105,44 @@ describe( '@gomezbl/files tests', () => {
             Assert.fail();
         }catch(err) {}
     });
+
+    it( '# Check if file exists', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+        let fileBuffer = Buffer.from("This is a test buffer");
+
+        let fileId = await f.AddFromBuffer( fileBuffer );
+        let exists = await f.ExistsFile( fileId );
+
+        Assert.isTrue( exists );
+    });
+
+    it( '# Check no existing file', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+        let fileId = 'BADFILEID0022334432';
+        let exists = await f.ExistsFile( fileId );
+
+        Assert.isFalse( exists );
+    });
+
+    it( '# Delete file', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+        let fileBuffer = Buffer.from("This is a test buffer");
+
+        let fileId = await f.AddFromBuffer( fileBuffer );
+        await f.DeleteFile( fileId );
+
+        let exists = await f.ExistsFile( fileId );
+
+        Assert.isFalse( exists );
+    });
+
+    it( '# Iterate all file', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+        let filesRead = 0;
+        let callback = async function( fileManifest ) { filesRead++; }
+
+        await f.IterateAll( callback );
+
+        Assert.isTrue( filesRead > 0 );
+    });
 });

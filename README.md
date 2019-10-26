@@ -83,5 +83,64 @@ let fileRead = await f.ReadFile( fileId );
 Assert.isTrue( fileBuffer.equals(fileRead) );
 ```
 
+### async ExistsFile( fileId )
+Checks if a file exists given its file ID
 
+Sample from tests:
+```
+let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+let fileBuffer = Buffer.from("This is a test buffer");
 
+let fileId = await f.AddFromBuffer( fileBuffer );
+let exists = await f.ExistsFile( fileId );
+
+Assert.isTrue( exists );
+```
+
+### async DeleteFile( fileId )
+Removes file given its file ID
+
+Sample from tests:
+```
+let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+let fileBuffer = Buffer.from("This is a test buffer");
+
+let fileId = await f.AddFromBuffer( fileBuffer );
+await f.DeleteFile( fileId );
+```
+
+### async GetFileManifest( fileId )
+Gets the JSON file manifest.
+
+This JSON object has this self description properties using one real sample:
+```
+{
+    "fileId": "3598af972306401b925ef163dfa649b3",
+    "length": 21,
+    "extension": "bin",
+    "created": "2019-10-14T07:50:22.945Z",
+    "location": "/home/rgb/dev/projects/files/test/testfilesrepository/dfa649b3/3598af972306401b925ef163dfa649b3.bin" }
+```
+
+Sample from tests:
+```
+let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+let fileBuffer = Buffer.from("This is a test buffer");
+
+let fileId = await f.AddFromBuffer( fileBuffer );
+let fileManifest = await f.GetFileManifest( fileId );
+```
+
+### async IterateAll( fnc )
+Iterates by all files in the repository and performs one call by file to fnc function with their filemanifests.
+
+Sample from tests:
+```
+let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
+let filesRead = 0;
+let callback = async function( fileManifest ) { filesRead++; }
+
+await f.IterateAll( callback );
+
+Assert.isTrue( filesRead > 0 );
+```

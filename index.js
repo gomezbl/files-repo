@@ -46,7 +46,7 @@ class FilesManager {
             length: fileContent.length,
             extension: ext.substr(1),
             created: new Date(),
-            location: fullPathToFileInRepo
+            location: fullPathToFileInRepo + ext
         }
 
         await Utils.saveFile( fullPathToFileInRepo+".manifest", JSON.stringify(manifest) );

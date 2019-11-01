@@ -32,6 +32,7 @@ class FilesManager {
 
         if ( config.RemoveOlderFiles ) {
             this.removeOlder = RemoveOlder(this. config.RemoveOlderFiles);
+            this.removeOlder.StartCronToRemoveOlderFiles();
         }
     }
 

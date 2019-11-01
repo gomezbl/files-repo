@@ -183,14 +183,20 @@ class FilesManager {
             let stats = await Utils.fileStat( fullPath );
 
             if ( stats.isDirectory() ) {
-                await this.IterateAllFromPath( fnc, fullPath );
+                let goon = await this.IterateAllFromPath( fnc, fullPath );
+
+                if ( !goon ) return false;
             } else {
                 if ( fullPath.endsWith( ".manifest")) {                    
                     let jsonManifest = JSON.parse( await Utils.readFile( fullPath ) );
-                    await fnc( jsonManifest );
+                    let goon = await fnc( jsonManifest );
+
+                    if (!goon) return false;
                 }
             }
         }
+
+        return true;
     }
 
     async IterateAll( fnc ) {
@@ -199,7 +205,7 @@ class FilesManager {
 
     async FilesCount() {
         let filesRead = 0;
-        let countFilesCallback = async function( fileManifest ) { filesRead++; }
+        let countFilesCallback = async function( fileManifest ) { filesRead++; return true; }
 
         await this.IterateAll( countFilesCallback );
 
@@ -207,19 +213,30 @@ class FilesManager {
     }
 
     async EmptyRepository() {
+        const BUNCH = 100;
         let filesIdToRemove = [];
+        let filesRemoved = 0;
 
         let addFileToRemove = function( fileManifest ) { 
             filesIdToRemove.push(fileManifest.fileId);
+            
+            return filesIdToRemove.length < BUNCH; 
         }
+        
+        do 
+        {
+            filesIdToRemove = [];
 
-        await this.IterateAll( addFileToRemove );
+            await this.IterateAll( addFileToRemove );
 
-        for( let fileId of filesIdToRemove ) {
-            await this.DeleteFile( fileId );
-        }
+            for( let fileId of filesIdToRemove ) {
+                await this.DeleteFile( fileId );
+            }
 
-        return filesIdToRemove.length;
+            filesRemoved += filesIdToRemove.length;
+        } while( filesIdToRemove.length > 0 );
+
+        return filesRemoved;
     }
 }
 

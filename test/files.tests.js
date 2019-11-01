@@ -134,7 +134,7 @@ describe( '@gomezbl/files tests', () => {
 
     it( '# Iterate all file', async() => {
         let filesRead = 0;
-        let callback = async function( fileManifest ) { filesRead++; }
+        let callback = async function( fileManifest ) { filesRead++; return true; }
 
         await f.IterateAll( callback );
 
@@ -148,6 +148,8 @@ describe( '@gomezbl/files tests', () => {
 
         let addFileToRemove = function( fileManifest ) { 
             filesIdToRemove.push(fileManifest.fileId);
+
+            return true;
         }
 
         await f.IterateAll( addFileToRemove );

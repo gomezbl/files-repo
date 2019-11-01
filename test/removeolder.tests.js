@@ -42,4 +42,18 @@ describe( '@gomezbl/removeolder tests', () => {
         
         Assert.isTrue( filesRemovedCount >= COUNT );
     });
+
+    it( "Add 150 files and check removed files", async() => {
+        const COUNT = 150;
+
+        let ro = RemoveOlder( filesManager, 0 );
+
+        for( let i = 0; i < COUNT; i++ ) {
+            await filesManager.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "testfile01.txt" ) );
+        }
+
+        let filesRemovedCount = await ro.CheckFilesToRemove();
+        
+        Assert.isTrue( filesRemovedCount >= COUNT );
+    });
 });

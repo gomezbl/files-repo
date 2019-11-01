@@ -140,4 +140,40 @@ describe( '@gomezbl/files tests', () => {
 
         Assert.isTrue( filesRead > 0 );
     });
+
+    it( '# Remove all and iterate all', async() => {
+        await f.AddFromBuffer( Buffer.from("This is a test buffer") );
+
+        let filesIdToRemove = [];
+
+        let addFileToRemove = function( fileManifest ) { 
+            filesIdToRemove.push(fileManifest.fileId);
+        }
+
+        await f.IterateAll( addFileToRemove );
+
+        for( let fileId of filesIdToRemove ) {
+            await f.DeleteFile( fileId );
+        }
+
+        let filesCount = await f.FilesCount();
+
+        Assert.isTrue( filesCount == 0 );
+    })
+
+    it( '# Files count', async() => {
+        await f.AddFromBuffer( Buffer.from("This is a test buffer") );
+
+        let filesCount = await f.FilesCount();
+
+        Assert.isTrue( filesCount > 0 );
+    });
+
+    it( '# Empty repository', async() => {
+        await f.EmptyRepository();
+
+        let filesCount = await f.FilesCount();
+
+        Assert.isTrue( filesCount == 0 );
+    });
 });

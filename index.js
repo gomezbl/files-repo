@@ -140,15 +140,16 @@ class FilesManager {
 
         if ( !(await Utils.fileExists(fullPathToFileInRepo+".manifest")) ) throw `Unable to locate file manifest with id ${fileId}`;
 
-        let manifest = JSON.parse(await Utils.readFile( fullPathToFileManifest ) );
+        let manifestContent = await Utils.readFile( fullPathToFileManifest );
+        let manifest = JSON.parse( manifestContent );
 
         fullPathToFileInRepo += ".";
         fullPathToFileInRepo += manifest.extension;
 
         if ( !(await Utils.fileExists(fullPathToFileInRepo)) ) throw `Unable to locate file with id ${fileId}`;
-
+            
         await Utils.deleteFile( fullPathToFileInRepo );
-        await Utils.deleteFile( fullPathToFileManifest );
+        await Utils.deleteFile( fullPathToFileManifest );    
     }
 
     async GetFullPathToFile( fileId ) {
@@ -174,8 +175,7 @@ class FilesManager {
         return JSON.parse(await Utils.readFile( fullPathToFileInRepo+".manifest") );
     }
 
-    async IterateAll( fnc, path ) {
-        let currentPath = path ? path : this.config.Path;
+    async IterateAllFromPath( fnc, currentPath ) {
         let files = await Utils.readDirectory( currentPath );
         
         for( let file of files ) {
@@ -183,14 +183,43 @@ class FilesManager {
             let stats = await Utils.fileStat( fullPath );
 
             if ( stats.isDirectory() ) {
-                await this.IterateAll( fnc, fullPath );
+                await this.IterateAllFromPath( fnc, fullPath );
             } else {
-                if ( fullPath.endsWith( ".manifest")) {
+                if ( fullPath.endsWith( ".manifest")) {                    
                     let jsonManifest = JSON.parse( await Utils.readFile( fullPath ) );
                     await fnc( jsonManifest );
                 }
             }
         }
+    }
+
+    async IterateAll( fnc ) {
+        await this.IterateAllFromPath( fnc, this.config.Path );
+    }
+
+    async FilesCount() {
+        let filesRead = 0;
+        let countFilesCallback = async function( fileManifest ) { filesRead++; }
+
+        await this.IterateAll( countFilesCallback );
+
+        return filesRead;
+    }
+
+    async EmptyRepository() {
+        let filesIdToRemove = [];
+
+        let addFileToRemove = function( fileManifest ) { 
+            filesIdToRemove.push(fileManifest.fileId);
+        }
+
+        await this.IterateAll( addFileToRemove );
+
+        for( let fileId of filesIdToRemove ) {
+            await this.DeleteFile( fileId );
+        }
+
+        return filesIdToRemove.length;
     }
 }
 

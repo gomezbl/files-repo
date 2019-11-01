@@ -12,21 +12,20 @@ const PATH_TO_FILES_REPOSITORY = Path.join( __dirname, PATH_TO_TEST_FILES );
 const PATH_TO_SAMPLE_FILES = Path.join( __dirname, TESFILESDIRECTORY );
 const REPOSITORY_SIZE = 1;
 
+let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
+
 describe( '@gomezbl/files tests', () => {
     before( async () => {
        await FsExtra.ensureDir( PATH_TO_FILES_REPOSITORY );
     });
 
-    it( '# Add file to repository from existing file', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
-        
+    it( '# Add file to repository from existing file', async() => {        
         let fileId = await f.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "testfile01.txt" ) );
 
         Assert.equal( fileId.length, 32 );
     });
 
     it( '# Check estension in manifest', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
         let fileId = await f.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "testfile01.txt" ) );
 
         let manifest = await f.GetFileManifest( fileId );
@@ -34,9 +33,7 @@ describe( '@gomezbl/files tests', () => {
         Assert.equal( manifest.extension, "txt" );
     });
 
-    it( '# Try to add no existingfile to repository', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
-        
+    it( '# Try to add no existingfile to repository', async() => {        
         try {
             await f.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "thisfiledoesn'texist.txt" ) );
             Assert.fail();
@@ -46,8 +43,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Add file to repository from existing file and read it', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
-        
         let fileId = await f.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "testfile01.txt" ) );
         let fileRead = await f.ReadFile( fileId );
 
@@ -56,7 +51,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Add file from buffer', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.from("This is a test buffer");
 
         let fileId = await f.AddFromBuffer( fileBuffer );
@@ -65,7 +59,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Add file from buffer 1 byte length', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.alloc(1,10);
 
         let fileId = await f.AddFromBuffer( fileBuffer );
@@ -75,7 +68,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Add file from buffer 1025 bytes length', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.alloc(1025,10);
 
         let fileId = await f.AddFromBuffer( fileBuffer );
@@ -85,7 +77,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Read file from buffer', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.from("This is a test buffer");
 
         let fileId = await f.AddFromBuffer( fileBuffer );
@@ -95,7 +86,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Get file manifest', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.from("This is a test buffer");
 
         let fileId = await f.AddFromBuffer( fileBuffer );
@@ -116,7 +106,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Check if file exists', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.from("This is a test buffer");
 
         let fileId = await f.AddFromBuffer( fileBuffer );
@@ -126,7 +115,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Check no existing file', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileId = 'BADFILEID0022334432';
         let exists = await f.ExistsFile( fileId );
 
@@ -134,7 +122,6 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Delete file', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let fileBuffer = Buffer.from("This is a test buffer");
 
         let fileId = await f.AddFromBuffer( fileBuffer );
@@ -146,12 +133,11 @@ describe( '@gomezbl/files tests', () => {
     });
 
     it( '# Iterate all file', async() => {
-        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE  } );
         let filesRead = 0;
         let callback = async function( fileManifest ) { filesRead++; }
 
         await f.IterateAll( callback );
-        
+
         Assert.isTrue( filesRead > 0 );
     });
 });

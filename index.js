@@ -2,7 +2,9 @@
 
 const Utils = require("./lib/utils");
 const Path = require("path");
-const fs = require("fs");
+const RemoveOlder = require("./lib/removeolder");
+
+const DEFAULT_SIZE = 2;
 
 class FilesManagerHelper {
     locationFromFileId( fileId, size ) {
@@ -13,16 +15,24 @@ class FilesManagerHelper {
 class FilesManager {
     /* 
      * config is a json with these properties:
-     *    Path: full path to locate the files repository
-     *    Size: [1...8], size of folder to allocate files. 1 to small file respository (hundred of files),
+     *    Path (mandatory): full path to locate the files repository
+     *    Size (optional): [1...8], size of folder to allocate files. 1 to small file respository (hundred of files),
      *                   8 for huge repositories (hundred of thousands of files). Bigger size, implied less 
-     *                   number of files in each folder.
+     *                   number of files in each folder. Default: 2
+     *    RemoveOlderFiles (optional): x, removes all files older than x seconds.
      */
     constructor(config) {
-        if ( config.Size < 1 || config.Size > 8 ) throw Error(`Size of repository of ${config.Size} not valid. Allowed from 1 to 8`);
- 
+        let size = config.Size ? config.Size : DEFAULT_SIZE; 
+        if ( size < 1 || size > 8 ) throw Error(`Size of repository of ${size} not valid. Allowed from 1 to 8`);
+
         this.config = config;
+        this.config.Size = size;
+
         this.Helper = new FilesManagerHelper();
+
+        if ( config.RemoveOlderFiles ) {
+            this.removeOlder = RemoveOlder(this. config.RemoveOlderFiles);
+        }
     }
 
     async AddExistingFile( pathToFile, fileId ) {
@@ -169,15 +179,15 @@ class FilesManager {
         
         for( let file of files ) {
             let fullPath = Path.join( currentPath, file );
-            if ( fullPath.endsWith( ".manifest")) {
-                let jsonManifest = JSON.parse( await Utils.readFile( fullPath ) );
-                await fnc( jsonManifest );
+            let stats = await Utils.fileStat( fullPath );
+
+            if ( stats.isDirectory() ) {
+                await this.IterateAll( fnc, fullPath );
             } else {
-                let stats = await Utils.fileStat( fullPath );
-    
-                if ( stats.isDirectory() ) {
-                    await this.IterateAll( fnc, fullPath );
-                }    
+                if ( fullPath.endsWith( ".manifest")) {
+                    let jsonManifest = JSON.parse( await Utils.readFile( fullPath ) );
+                    await fnc( jsonManifest );
+                }
             }
         }
     }

@@ -25,6 +25,15 @@ describe( '@gomezbl/files tests', () => {
         Assert.equal( fileId.length, 32 );
     });
 
+    it( '# Check estension in manifest', async() => {
+        let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
+        let fileId = await f.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "testfile01.txt" ) );
+
+        let manifest = await f.GetFileManifest( fileId );
+
+        Assert.equal( manifest.extension, "txt" );
+    });
+
     it( '# Try to add no existingfile to repository', async() => {
         let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
         

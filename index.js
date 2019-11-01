@@ -72,7 +72,7 @@ class FilesManager {
 
         await Utils.saveFile( fullPathToManifest, JSON.stringify(manifest) );
 
-        return fullPathToFileInRepo;
+        return manifest;
     }
 
     async AddFromBuffer( bufferContent, fileExtension ) {

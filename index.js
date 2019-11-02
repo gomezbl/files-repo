@@ -175,34 +175,22 @@ class FilesManager {
         return JSON.parse(await Utils.readFile( fullPathToFileInRepo+".manifest") );
     }
 
-    async IterateAllFromPath( fnc, currentPath ) {
-        let files = await Utils.readDirectory( currentPath );
-        
-        for( let file of files ) {
-            let fullPath = Path.join( currentPath, file );
-            let stats = await Utils.fileStat( fullPath );
+    async IterateAll( fnc ) {
+        let directories = await Utils.readDirectories(this.config.Path);
 
-            if ( stats.isDirectory() ) {
-                let goon = await this.IterateAllFromPath( fnc, fullPath );
+        for (let directory of directories) {
+            let filesInDirectory = await Utils.readFilesWithExtension(directory, "manifest");
 
-                if ( !goon ) return false;
-            } else {
-                if ( fullPath.endsWith( ".manifest")) {                    
-                    let jsonManifest = JSON.parse( await Utils.readFile( fullPath ) );
-                    let goon = await fnc( jsonManifest );
+            for (let file of filesInDirectory) {
+                let jsonManifest = JSON.parse(await Utils.readFile(file));
+                
+                let goon = await fnc( jsonManifest);
 
-                    if (!goon) return false;
-                }
+                if ( !goon ) return;
             }
         }
-
-        return true;
     }
-
-    async IterateAll( fnc ) {
-        await this.IterateAllFromPath( fnc, this.config.Path );
-    }
-
+ 
     async FilesCount() {
         let filesRead = 0;
         let countFilesCallback = async function( fileManifest ) { filesRead++; return true; }

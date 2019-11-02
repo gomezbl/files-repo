@@ -16,12 +16,14 @@ let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
 
 describe( '@gomezbl/files tests', () => {
     before( async () => {
-       await FsExtra.ensureDir( PATH_TO_FILES_REPOSITORY );
+        await FsExtra.remove(PATH_TO_FILES_REPOSITORY);
+        await FsExtra.ensureDir(PATH_TO_FILES_REPOSITORY);
     });
 
     it( '# Add file to repository from existing file', async() => {        
         let fileId = await f.AddExistingFile( Path.join( PATH_TO_SAMPLE_FILES, "testfile01.txt" ) );
 
+        Assert.isString( fileId );
         Assert.equal( fileId.length, 32 );
     });
 
@@ -177,5 +179,33 @@ describe( '@gomezbl/files tests', () => {
         let filesCount = await f.FilesCount();
 
         Assert.isTrue( filesCount == 0 );
+    });
+
+    it( '# Concat with two files', async() => {
+        let fileId1 = await f.AddFromBuffer( Buffer.from("a") );
+        let fileId2 = await f.AddFromBuffer( Buffer.from("b") );
+
+        let filesToConcat = [fileId1, fileId2];
+
+        let fileIdConcated = await f.ConcatGroupOfFiles(filesToConcat, "txt");
+
+        Assert.equal( fileIdConcated.length, 32 );
+        Assert.isString( fileIdConcated );
+    });
+
+    it( '# Concat with two files and read file', async() => {
+        let fileId1 = await f.AddFromBuffer( Buffer.from("a") );
+        let fileId2 = await f.AddFromBuffer( Buffer.from("b") );
+
+        let filesToConcat = [fileId1, fileId2];
+
+        let fileIdConcated = await f.ConcatGroupOfFiles(filesToConcat, "txt");
+
+        Assert.equal( fileIdConcated.length, 32 );
+        Assert.isString( fileIdConcated );
+
+        let content = await f.ReadFile( fileIdConcated );
+
+        Assert.equal( content, "ab" );
     });
 });

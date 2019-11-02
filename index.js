@@ -226,6 +226,23 @@ class FilesManager {
 
         return filesRemoved;
     }
+
+    async ConcatGroupOfFiles( filesToGroup, extension ) {
+        let manifestNewFile = await this.AllocateNewFileLocation( extension );
+
+        for( let fileIdToAdd of filesToGroup ) {
+            await this.AppendTo( fileIdToAdd, manifestNewFile.fileId );            
+        }
+
+        return manifestNewFile.fileId;
+    }
+
+    async AppendTo( fileIdOrigin, fileIdDestination ) {
+        let fileIdOriginManifest = await this.GetFileManifest( fileIdOrigin );
+        let fileDestination = await this.GetFileManifest( fileIdDestination );
+
+        await Utils.appendFile( fileIdOriginManifest.location, fileDestination.location );
+    }
 }
 
 module.exports = (config) => new FilesManager(config);

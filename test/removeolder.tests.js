@@ -3,6 +3,7 @@
 const Path = require("path");
 const Assert = require("chai").assert;
 const RemoveOlder = require("../lib/removeolder");
+const FsExtra = require("fs-extra");
 
 const Files = require("..");
 const PATH_TO_TEST_FILES = "testfilesrepository";
@@ -16,7 +17,12 @@ let filesManager = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZ
 let removeOlder = RemoveOlder( filesManager, SECONDSOLDERTOREMOVE );
 
 describe( '@gomezbl/removeolder tests', () => {
-    it( "ShouldBeRemoved with older date", () => {
+    before( async () => {
+        await FsExtra.remove(PATH_TO_FILES_REPOSITORY);
+        await FsExtra.ensureDir(PATH_TO_FILES_REPOSITORY);
+    });
+
+    it( "ShouldBeRemoved with older date", () => {        
         let oldDate = new Date( new Date().getTime() - 10*60000 );
         Assert.isTrue( removeOlder.ShouldBeRemoved( oldDate ) );
     });

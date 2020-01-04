@@ -16,7 +16,6 @@ let f = Files( { Path: PATH_TO_FILES_REPOSITORY, Size: REPOSITORY_SIZE } );
 
 describe( '@gomezbl/files tests', () => {
     before( async () => {
-        await FsExtra.remove(PATH_TO_FILES_REPOSITORY);
         await FsExtra.ensureDir(PATH_TO_FILES_REPOSITORY);
     });
 

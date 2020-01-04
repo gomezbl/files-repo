@@ -18,7 +18,6 @@ let removeOlder = RemoveOlder( filesManager, SECONDSOLDERTOREMOVE );
 
 describe( '@gomezbl/removeolder tests', () => {
     before( async () => {
-        await FsExtra.remove(PATH_TO_FILES_REPOSITORY);
         await FsExtra.ensureDir(PATH_TO_FILES_REPOSITORY);
     });
 

@@ -58,7 +58,7 @@ class FilesManager {
             length: fileContent.length,
             extension: ext.substr(1),
             created: new Date(),
-            localPath: `/${loc}/${fileId}.${ext}`
+            localPath: `/${loc}/${fileId}${ext}`
         }
 
         await Utils.saveFile( fullPathToFileInRepo+".manifest", JSON.stringify(manifest) );
@@ -78,7 +78,6 @@ class FilesManager {
         let loc = this.Helper.locationFromFileId(fileId, this.config.Size);
         let fileFolder = Path.join( this.config.Path, loc );        
         let ext = fileExtension ? fileExtension : "bin";
-        let fullPathToFileInRepo = Path.join( fileFolder, fileId + "." + ext );
         let fullPathToManifest = Path.join( fileFolder, fileId+".manifest" );        
 
         await Utils.ensureDir( fileFolder );

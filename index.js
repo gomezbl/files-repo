@@ -40,13 +40,14 @@ class FilesManager {
         if ( !(await Utils.fileExists(pathToFile)) ) throw `File not exists: ${pathToFile}`;
 
         let ext = Path.extname(pathToFile);
-
+    
         if ( typeof fileId == 'undefined' ) {
             fileId = Utils.newUUID();
         }
-        
+    
+        let loc = this.Helper.locationFromFileId(fileId, this.config.Size);
         let fileContent = await Utils.readFile( pathToFile );
-        let fileFolder = Path.join( this.config.Path, this.Helper.locationFromFileId(fileId, this.config.Size) );
+        let fileFolder = Path.join( this.config.Path, loc );
         let fullPathToFileInRepo = Path.join( fileFolder, fileId );
         
         await Utils.ensureDir( fileFolder );
@@ -57,7 +58,7 @@ class FilesManager {
             length: fileContent.length,
             extension: ext.substr(1),
             created: new Date(),
-            location: fullPathToFileInRepo + ext
+            localPath: `/${loc}/${fileId}.${ext}`
         }
 
         await Utils.saveFile( fullPathToFileInRepo+".manifest", JSON.stringify(manifest) );
@@ -65,10 +66,19 @@ class FilesManager {
         return fileId;
     }
 
+    async UpdateFileManifest( fileId, manifest ) {
+        let loc = this.Helper.locationFromFileId(fileId, this.config.Size);
+        let fullPathToFileInRepo = Path.join( this.config.Path, loc, fileId );
+        
+        await Utils.saveFile( fullPathToFileInRepo+".manifest", JSON.stringify(manifest) );
+    }
+
     async AllocateNewFileLocation( fileExtension ) {
         let fileId = Utils.newUUID();
-        let fileFolder = Path.join( this.config.Path, this.Helper.locationFromFileId(fileId, this.config.Size) );        
-        let fullPathToFileInRepo = Path.join( fileFolder, fileId+"."+(fileExtension ? fileExtension : "bin") );
+        let loc = this.Helper.locationFromFileId(fileId, this.config.Size);
+        let fileFolder = Path.join( this.config.Path, loc );        
+        let ext = fileExtension ? fileExtension : "bin";
+        let fullPathToFileInRepo = Path.join( fileFolder, fileId + "." + ext );
         let fullPathToManifest = Path.join( fileFolder, fileId+".manifest" );        
 
         await Utils.ensureDir( fileFolder );
@@ -78,7 +88,7 @@ class FilesManager {
             length: -1,
             extension: fileExtension,
             created: new Date(),
-            location: fullPathToFileInRepo
+            localPath: `/${loc}/${fileId}.${ext}`
         }
 
         await Utils.saveFile( fullPathToManifest, JSON.stringify(manifest) );
@@ -88,7 +98,8 @@ class FilesManager {
 
     async AddFromBuffer( bufferContent, fileExtension ) {
         let fileId = Utils.newUUID();
-        let fileFolder = Path.join( this.config.Path, this.Helper.locationFromFileId(fileId, this.config.Size) );
+        let loc = this.Helper.locationFromFileId(fileId, this.config.Size);
+        let fileFolder = Path.join( this.config.Path, loc );
         let fullPathToFileInRepo = Path.join( fileFolder, fileId );
         
         let ext = fileExtension ? fileExtension : "bin";
@@ -101,7 +112,7 @@ class FilesManager {
             length: bufferContent.length,
             extension: ext,
             created: new Date(),
-            location: fullPathToFileInRepo + "." + ext
+            localPath: `/${loc}/${fileId}.${ext}`
         }
 
         await Utils.saveFile( fullPathToFileInRepo+".manifest", JSON.stringify(manifest) );
@@ -172,7 +183,22 @@ class FilesManager {
 
         if ( !(await Utils.fileExists(fullPathToFileInRepo+".manifest")) ) throw `Unable to locate file manifest with id ${fileId}`;
 
-        return JSON.parse(await Utils.readFile( fullPathToFileInRepo+".manifest") );
+        let manifest = JSON.parse(await Utils.readFile( fullPathToFileInRepo+".manifest") );
+
+        manifest.location = Path.join(this.config.Path, manifest.localPath);
+
+        return manifest;
+    }
+
+    /*
+     * Adds field "metadata" to a file manifest
+     * with specific information about that file for some client purpose
+     */
+    async AddMetadataToFile( fileId, metadata ) {
+        let manifest = await this.GetFileManifest( fileId );
+        manifest.metadata = metadata;
+
+        await this.UpdateFileManifest( fileId, manifest );
     }
 
     async IterateAll( fnc ) {

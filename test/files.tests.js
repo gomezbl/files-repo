@@ -207,4 +207,25 @@ describe( '@gomezbl/files tests', () => {
 
         Assert.equal( content, "ab" );
     });
+
+    it( '# Add string metadata to a file', async() => {
+        let metadata = "samplemetadata";
+        let fileId1 = await f.AddFromBuffer( Buffer.from("a") );
+
+        await f.AddMetadataToFile( fileId1, metadata );
+        let manifest = await f.GetFileManifest( fileId1 );
+
+        Assert.equal( metadata, manifest.metadata );
+    });
+
+    it( '# Add object metadata to a file', async() => {
+        let metadata = { data1: "a", data2: "b"};
+        let fileId1 = await f.AddFromBuffer( Buffer.from("a") );
+
+        await f.AddMetadataToFile( fileId1, metadata );
+        let manifest = await f.GetFileManifest( fileId1 );
+
+        Assert.equal( metadata.data1, manifest.metadata.data1 );
+        Assert.equal( metadata.data2, manifest.metadata.data2 );
+    });
 });

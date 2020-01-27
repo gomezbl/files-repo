@@ -78,6 +78,7 @@ class FilesManager {
         let loc = this.Helper.locationFromFileId(fileId, this.config.Size);
         let fileFolder = Path.join( this.config.Path, loc );        
         let ext = fileExtension ? fileExtension : "bin";
+        let fullPathToFileInRepo = Path.join( fileFolder, fileId + "." + ext );
         let fullPathToManifest = Path.join( fileFolder, fileId+".manifest" );        
 
         await Utils.ensureDir( fileFolder );
@@ -92,7 +93,7 @@ class FilesManager {
 
         await Utils.saveFile( fullPathToManifest, JSON.stringify(manifest) );
 
-        return manifest;
+        return this.GetFileManifest( fileId );
     }
 
     async AddFromBuffer( bufferContent, fileExtension ) {
@@ -150,16 +151,16 @@ class FilesManager {
 
         if ( !(await Utils.fileExists(fullPathToFileInRepo+".manifest")) ) throw `Unable to locate file manifest with id ${fileId}`;
 
-        let manifestContent = await Utils.readFile( fullPathToFileManifest );
-        let manifest = JSON.parse( manifestContent );
+        let manifest = await this.GetFileManifest( fileId );
 
         fullPathToFileInRepo += ".";
         fullPathToFileInRepo += manifest.extension;
 
-        if ( !(await Utils.fileExists(fullPathToFileInRepo)) ) throw `Unable to locate file with id ${fileId}`;
-            
-        await Utils.deleteFile( fullPathToFileInRepo );
-        await Utils.deleteFile( fullPathToFileManifest );    
+        await Utils.deleteFile( fullPathToFileManifest );
+
+        if ( await Utils.fileExists( fullPathToFileInRepo ) ) {
+            await Utils.deleteFile( fullPathToFileInRepo );
+        }
     }
 
     async GetFullPathToFile( fileId ) {
@@ -208,7 +209,7 @@ class FilesManager {
 
             for (let file of filesInDirectory) {
                 let jsonManifest = JSON.parse(await Utils.readFile(file));
-                
+                jsonManifest = await this.GetFileManifest( jsonManifest.fileId );
                 let goon = await fnc( jsonManifest);
 
                 if ( !goon ) return;

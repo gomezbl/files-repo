@@ -73,27 +73,26 @@ class FilesManager {
         await Utils.saveFile( fullPathToFileInRepo+".manifest", JSON.stringify(manifest) );
     }
 
-    async AllocateNewFileLocation( fileExtension ) {
-        let fileId = Utils.newUUID();
-        let loc = this.Helper.locationFromFileId(fileId, this.config.Size);
+    async AllocateNewFileLocation( fileExtension, fileId ) {
+        let newFileId = fileId || Utils.newUUID();
+        let loc = this.Helper.locationFromFileId(newFileId , this.config.Size);
         let fileFolder = Path.join( this.config.Path, loc );        
-        let ext = fileExtension ? fileExtension : "bin";
-        let fullPathToFileInRepo = Path.join( fileFolder, fileId + "." + ext );
-        let fullPathToManifest = Path.join( fileFolder, fileId+".manifest" );        
+        let ext = fileExtension || "bin";
+        let fullPathToManifest = Path.join( fileFolder, newFileId+".manifest" );        
 
         await Utils.ensureDir( fileFolder );
 
         let manifest = {
-            fileId: fileId,
+            fileId: newFileId ,
             length: -1,
-            extension: fileExtension,
+            extension: ext,
             created: new Date(),
-            localPath: `/${loc}/${fileId}.${ext}`
+            localPath: `/${loc}/${newFileId }.${ext}`
         }
 
         await Utils.saveFile( fullPathToManifest, JSON.stringify(manifest) );
 
-        return this.GetFileManifest( fileId );
+        return this.GetFileManifest( newFileId );
     }
 
     async AddFromBuffer( bufferContent, fileExtension ) {
@@ -267,7 +266,19 @@ class FilesManager {
         let fileIdOriginManifest = await this.GetFileManifest( fileIdOrigin );
         let fileDestination = await this.GetFileManifest( fileIdDestination );
 
-        await Utils.appendFile( fileIdOriginManifest.location, fileDestination.location );
+        return Utils.appendFile( fileIdOriginManifest.location, fileDestination.location );
+    }
+
+    async AppendToExistingFile( fileId, fullPathToFileToAppend ) {
+        let fileManifest = await this.GetFileManifest( fileId );
+
+        return Utils.appendFile( fullPathToFileToAppend, fileManifest.location );
+    }
+
+    async AppendContentToExistingFile( fileId, contentToAppend ) {
+        let fileManifest = await this.GetFileManifest( fileId );
+
+        return Utils.appendContentToFile( fileManifest.location, contentToAppend );
     }
 }
 

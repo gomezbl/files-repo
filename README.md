@@ -13,7 +13,7 @@ Installation is done using [`npm install` command](https://docs.npmjs.com/gettin
 $ npm install files-repo
 ```
 
-## Features
+## Features 
 
 * Ready for handle thousands of files in a repository
 * Add files from Buffer type or from an existing file
